@@ -51,10 +51,10 @@ export function ChatMessage({ message, onSpeak }: ChatMessageProps) {
             variant="ghost"
             size="sm"
             onClick={() => onSpeak(message.content)}
-            className="mt-2 h-8 px-2 text-xs"
+            className="mt-2 h-8 px-2 text-xs hover:bg-primary/10"
           >
             <Volume2 className="h-3 w-3 mr-1" />
-            Speak
+            Read Aloud
           </Button>
         )}
       </div>

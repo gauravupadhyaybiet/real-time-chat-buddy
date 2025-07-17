@@ -113,6 +113,7 @@ export function ChatContainer() {
               onSpeak={speak}
               isPlaying={isPlaying}
               onStop={stop}
+              isLoading={false}
             />
             <ApiKeyDialog apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
             {messages.length > 0 && (

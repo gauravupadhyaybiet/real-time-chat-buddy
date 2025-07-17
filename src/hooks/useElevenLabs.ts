@@ -7,19 +7,7 @@ export function useElevenLabs() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
-  const speak = async (text: string, apiKey?: string, voiceId?: string) => {
-    const savedApiKey = apiKey || localStorage.getItem("elevenlabs-api-key");
-    const savedVoiceId = voiceId || localStorage.getItem("voice-id") || "9BWtsMINqrJLrRacOk9x";
-
-    if (!savedApiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please set your ElevenLabs API key in voice settings.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const speak = async (text: string) => {
     if (!text.trim()) {
       return;
     }
@@ -27,93 +15,73 @@ export function useElevenLabs() {
     setIsLoading(true);
     
     try {
-      const response = await fetch(
-        `https://api.elevenlabs.io/v1/text-to-speech/${savedVoiceId}`,
-        {
-          method: "POST",
-          headers: {
-            "Accept": "audio/mpeg",
-            "Content-Type": "application/json",
-            "xi-api-key": savedApiKey,
-          },
-          body: JSON.stringify({
-            text: text.trim(),
-            model_id: "eleven_multilingual_v2",
-            voice_settings: {
-              stability: 0.5,
-              similarity_boost: 0.75,
-              style: 0.0,
-              use_speaker_boost: true
-            }
-          }),
+      // Use Web Speech API for text-to-speech
+      if ('speechSynthesis' in window) {
+        // Stop any currently playing speech
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
         }
-      );
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Invalid API key. Please check your ElevenLabs API key.");
+        
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text.trim());
+        
+        // Configure voice settings
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        
+        // Try to use a more natural voice if available
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(voice => 
+          voice.name.includes('Google') || 
+          voice.name.includes('Microsoft') ||
+          voice.lang.startsWith('en')
+        );
+        
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
         }
-        throw new Error(`HTTP error! status: ${response.status}`);
+        
+        utterance.onstart = () => setIsPlaying(true);
+        utterance.onend = () => setIsPlaying(false);
+        utterance.onerror = () => {
+          setIsPlaying(false);
+          toast({
+            title: "Speech Error",
+            description: "Failed to play speech. Please try again.",
+            variant: "destructive",
+          });
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        throw new Error("Speech synthesis not supported in this browser");
       }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      
-      // Stop any currently playing audio
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      
-      audio.onloadstart = () => setIsPlaying(true);
-      audio.onended = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-        audioRef.current = null;
-      };
-      audio.onerror = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-        audioRef.current = null;
-        toast({
-          title: "Playback Error",
-          description: "Failed to play the audio.",
-          variant: "destructive",
-        });
-      };
-
-      await audio.play();
       
     } catch (error) {
-      console.error("Error with ElevenLabs TTS:", error);
+      console.error("Error with speech synthesis:", error);
       
-      if (error instanceof Error) {
-        toast({
-          title: "Voice Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Voice Error",
-          description: "Failed to generate speech. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Speech Error",
+        description: "Speech synthesis is not available in your browser.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const stop = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
-      setIsPlaying(false);
     }
+    setIsPlaying(false);
   };
 
   return {
