@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Bot, User } from "lucide-react";
+import { Bot, User, Volume2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ChatMessageProps {
   message: {
@@ -8,9 +9,10 @@ interface ChatMessageProps {
     role: 'user' | 'assistant';
     timestamp: Date;
   };
+  onSpeak?: (text: string) => void;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, onSpeak }: ChatMessageProps) {
   const isUser = message.role === 'user';
 
   return (
@@ -41,12 +43,23 @@ export function ChatMessage({ message }: ChatMessageProps) {
             ? "bg-chat-bubble-user text-chat-bubble-user-foreground"
             : "bg-chat-bubble-ai text-chat-bubble-ai-foreground border"
         )}>
-          <div className="whitespace-pre-wrap break-words">
-            {message.content}
-          </div>
+        <div className="whitespace-pre-wrap break-words">
+          {message.content}
         </div>
-        <div className="text-xs text-muted-foreground">
-          {message.timestamp.toLocaleTimeString()}
+        {!isUser && onSpeak && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onSpeak(message.content)}
+            className="mt-2 h-8 px-2 text-xs"
+          >
+            <Volume2 className="h-3 w-3 mr-1" />
+            Speak
+          </Button>
+        )}
+      </div>
+      <div className="text-xs text-muted-foreground">
+        {message.timestamp.toLocaleTimeString()}
         </div>
       </div>
     </div>

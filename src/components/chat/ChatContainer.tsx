@@ -2,10 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { ApiKeyDialog } from "./ApiKeyDialog";
+import { VoiceControls } from "../voice/VoiceControls";
 import { useGeminiAI } from "@/hooks/useGeminiAI";
+import { useElevenLabs } from "@/hooks/useElevenLabs";
 import { Button } from "@/components/ui/button";
-import { Trash2, MessageSquare } from "lucide-react";
+import { Trash2, MessageSquare, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 interface Message {
   id: string;
@@ -18,6 +21,7 @@ export function ChatContainer() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [apiKey, setApiKey] = useState("");
   const { sendMessage, isLoading } = useGeminiAI();
+  const { speak, stop, isPlaying } = useElevenLabs();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -92,11 +96,24 @@ export function ChatContainer() {
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-14 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-primary" />
-            <h1 className="text-lg font-semibold">Gemini AI Chat</h1>
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </Link>
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-6 w-6 text-primary" />
+              <h1 className="text-lg font-semibold">Gemini AI Chat</h1>
+            </div>
           </div>
           <div className="flex items-center gap-2">
+            <VoiceControls 
+              onSpeak={speak}
+              isPlaying={isPlaying}
+              onStop={stop}
+            />
             <ApiKeyDialog apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
             {messages.length > 0 && (
               <Button variant="outline" size="sm" onClick={clearChat}>
@@ -128,7 +145,11 @@ export function ChatContainer() {
         ) : (
           <div className="space-y-0">
             {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
+              <ChatMessage 
+                key={message.id} 
+                message={message} 
+                onSpeak={message.role === 'assistant' ? speak : undefined}
+              />
             ))}
             <div ref={messagesEndRef} />
           </div>
