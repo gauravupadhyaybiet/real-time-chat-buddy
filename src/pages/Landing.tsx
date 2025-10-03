@@ -18,7 +18,7 @@ export default function Landing() {
               Gemini Chat AI
             </span>
           </div>
-          <Link to="/chat">
+          <Link to="/auth">
             <Button className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary">
               Get Started
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -47,10 +47,16 @@ export default function Landing() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
-            <Link to="/chat">
+            <Link to="/auth">
               <Button size="lg" className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-lg px-8 py-6">
                 Start Chatting
                 <MessageSquare className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/chat">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+                Try AI Chat
+                <Bot className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -162,7 +168,7 @@ export default function Landing() {
           <p className="text-xl text-muted-foreground">
             Join thousands of users already having intelligent conversations with AI
           </p>
-          <Link to="/chat">
+          <Link to="/auth">
             <Button size="lg" className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-lg px-8 py-6">
               Start Your Journey
               <Zap className="ml-2 h-5 w-5" />
