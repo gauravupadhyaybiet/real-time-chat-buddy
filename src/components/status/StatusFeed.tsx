@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Heart, ThumbsUp, Laugh, Frown, Eye, Flame } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, Heart, ThumbsUp, Laugh, Frown, Eye, Flame, Image, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Status {
@@ -11,6 +12,7 @@ interface Status {
   user_id: string;
   content: string;
   media_url?: string;
+  media_type?: string;
   created_at: string;
   profiles: {
     username: string;
@@ -41,6 +43,9 @@ export function StatusFeed({ userId }: StatusFeedProps) {
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [newStatus, setNewStatus] = useState("");
   const [showInput, setShowInput] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -106,28 +111,83 @@ export function StatusFeed({ userId }: StatusFeedProps) {
     }
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Image must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
+  };
+
   const createStatus = async () => {
-    if (!newStatus.trim()) return;
+    if (!newStatus.trim() && !selectedImage) return;
 
-    const { error } = await supabase
-      .from('statuses')
-      .insert({
-        user_id: userId,
-        content: newStatus,
+    setUploading(true);
+    let mediaUrl = null;
+    let mediaType = null;
+
+    try {
+      // Upload image if selected
+      if (selectedImage) {
+        const fileExt = selectedImage.name.split('.').pop();
+        const fileName = `${userId}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError, data } = await supabase.storage
+          .from('status-media')
+          .upload(fileName, selectedImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('status-media')
+          .getPublicUrl(fileName);
+
+        mediaUrl = publicUrl;
+        mediaType = selectedImage.type;
+      }
+
+      // Create status
+      const { error } = await supabase
+        .from('statuses')
+        .insert({
+          user_id: userId,
+          content: newStatus,
+          media_url: mediaUrl,
+          media_type: mediaType,
+        });
+
+      if (error) throw error;
+
+      setNewStatus("");
+      removeImage();
+      setShowInput(false);
+      toast({
+        title: "Status posted!",
       });
-
-    if (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
-    } else {
-      setNewStatus("");
-      setShowInput(false);
-      toast({
-        title: "Status posted!",
-      });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -179,9 +239,52 @@ export function StatusFeed({ userId }: StatusFeedProps) {
                 value={newStatus}
                 onChange={(e) => setNewStatus(e.target.value)}
               />
-              <div className="flex gap-2">
-                <Button onClick={createStatus}>Post</Button>
-                <Button variant="outline" onClick={() => setShowInput(false)}>
+              
+              {imagePreview && (
+                <div className="relative">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="max-h-64 rounded-lg object-cover w-full"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={removeImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                  disabled={uploading}
+                >
+                  <Image className="h-4 w-4" />
+                </Button>
+                <Button onClick={createStatus} disabled={uploading}>
+                  {uploading ? "Posting..." : "Post"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowInput(false);
+                    removeImage();
+                  }}
+                  disabled={uploading}
+                >
                   Cancel
                 </Button>
               </div>
@@ -200,7 +303,16 @@ export function StatusFeed({ userId }: StatusFeedProps) {
                 {new Date(status.created_at).toLocaleString()}
               </p>
             </div>
-            <p>{status.content}</p>
+            {status.content && <p>{status.content}</p>}
+            
+            {/* Display image if exists */}
+            {status.media_url && status.media_type?.startsWith('image/') && (
+              <img 
+                src={status.media_url} 
+                alt="Status media" 
+                className="w-full rounded-lg object-cover max-h-96"
+              />
+            )}
             
             {/* View count */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
