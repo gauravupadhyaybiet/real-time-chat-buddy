@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Bot, Volume2, Sparkles, Zap, Shield, ArrowRight, Star } from "lucide-react";
+import { MessageSquare, Bot, Volume2, Sparkles, Zap, Shield, ArrowRight, Star, Users, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Landing() {
@@ -46,19 +46,35 @@ export default function Landing() {
             Chat with Google's most advanced AI model featuring natural conversations, voice synthesis, and intelligent responses.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
-            <Link to="/auth">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-lg px-8 py-6">
-                Start Chatting
-                <MessageSquare className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/chat">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-                Try AI Chat
-                <Bot className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
+          <div className="flex flex-col gap-4 items-center pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/auth">
+                <Button size="lg" className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-lg px-8 py-6">
+                  Start Chatting
+                  <MessageSquare className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/chat">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+                  Try AI Chat
+                  <Bot className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/chats">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-teal-50 hover:bg-teal-100 border-teal-200">
+                  Real-time Chat
+                  <MessageCircle className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/status">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-green-50 hover:bg-green-100 border-green-200">
+                  Status Updates
+                  <Users className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
