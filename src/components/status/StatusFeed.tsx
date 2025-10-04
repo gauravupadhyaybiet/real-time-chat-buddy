@@ -19,6 +19,9 @@ interface Status {
     reaction: string;
     user_id: string;
   }>;
+  status_views: Array<{
+    user_id: string;
+  }>;
 }
 
 interface StatusFeedProps {
@@ -64,6 +67,15 @@ export function StatusFeed({ userId }: StatusFeedProps) {
         },
         () => loadStatuses()
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'status_views',
+        },
+        () => loadStatuses()
+      )
       .subscribe();
 
     return () => {
@@ -77,12 +89,20 @@ export function StatusFeed({ userId }: StatusFeedProps) {
       .select(`
         *,
         profiles(username),
-        status_reactions(reaction, user_id)
+        status_reactions(reaction, user_id),
+        status_views(user_id)
       `)
       .order('created_at', { ascending: false });
 
     if (!error && data) {
       setStatuses(data as any);
+      
+      // Mark statuses as viewed
+      data.forEach(status => {
+        if (status.user_id !== userId && !status.status_views?.some(v => v.user_id === userId)) {
+          recordView(status.id);
+        }
+      });
     }
   };
 
@@ -109,6 +129,15 @@ export function StatusFeed({ userId }: StatusFeedProps) {
         title: "Status posted!",
       });
     }
+  };
+
+  const recordView = async (statusId: string) => {
+    await supabase
+      .from('status_views')
+      .insert({
+        status_id: statusId,
+        user_id: userId,
+      });
   };
 
   const addReaction = async (statusId: string, reaction: string) => {
@@ -172,6 +201,14 @@ export function StatusFeed({ userId }: StatusFeedProps) {
               </p>
             </div>
             <p>{status.content}</p>
+            
+            {/* View count */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Eye className="h-4 w-4" />
+              <span>{status.status_views?.length || 0} {status.status_views?.length === 1 ? 'view' : 'views'}</span>
+            </div>
+
+            {/* Reactions */}
             <div className="flex flex-wrap gap-2">
               {reactions.map(({ emoji, icon: Icon }) => {
                 const count = status.reactions.filter(r => r.reaction === emoji).length;
