@@ -83,14 +83,14 @@ export default function Status() {
       .from('statuses')
       .select(`
         *,
-        profiles!inner(username, avatar_url)
+        profiles(username, avatar_url)
       `)
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false });
 
     if (statusData) {
       const statusesWithCounts = await Promise.all(
-        statusData.map(async (status) => {
+        statusData.map(async (status: any) => {
           const { count: viewCount } = await supabase
             .from('status_views')
             .select('*', { count: 'exact', head: true })
@@ -109,12 +109,18 @@ export default function Status() {
             .maybeSingle();
 
           return {
-            ...status,
+            id: status.id,
+            user_id: status.user_id,
+            content: status.content,
+            media_url: status.media_url,
+            media_type: status.media_type,
+            created_at: status.created_at,
+            expires_at: status.expires_at,
             view_count: viewCount || 0,
             reaction_count: reactionCount || 0,
             has_viewed: !!hasViewed,
             user_profiles: status.profiles
-          };
+          } as StatusPost;
         })
       );
 

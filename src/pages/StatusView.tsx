@@ -75,16 +75,21 @@ export default function StatusView() {
 
   const loadStatus = async () => {
     const { data } = await supabase
-      .from('status_posts')
+      .from('statuses')
       .select(`
         *,
-        user_profiles!inner(username, avatar_url)
+        profiles(username, avatar_url)
       `)
       .eq('id', statusId)
       .maybeSingle();
 
     if (data) {
-      setStatus(data);
+      setStatus({
+        ...data,
+        content_type: data.media_type ? 'image' : 'text',
+        background_color: '#075E54',
+        user_profiles: data.profiles
+      } as any);
     }
   };
 
@@ -93,13 +98,17 @@ export default function StatusView() {
       .from('status_views')
       .select(`
         *,
-        user_profiles!inner(username, avatar_url)
+        profiles(username, avatar_url)
       `)
       .eq('status_id', statusId)
       .order('viewed_at', { ascending: false });
 
     if (data) {
-      setViews(data);
+      setViews(data.map(v => ({
+        ...v,
+        viewer_id: v.user_id,
+        user_profiles: v.profiles
+      })) as any);
     }
   };
 
@@ -108,13 +117,16 @@ export default function StatusView() {
       .from('status_reactions')
       .select(`
         *,
-        user_profiles!inner(username, avatar_url)
+        profiles(username, avatar_url)
       `)
       .eq('status_id', statusId)
       .order('created_at', { ascending: false });
 
     if (data) {
-      setReactions(data);
+      setReactions(data.map(r => ({
+        ...r,
+        user_profiles: r.profiles
+      })) as any);
     }
   };
 

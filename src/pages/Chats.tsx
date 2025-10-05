@@ -13,7 +13,6 @@ interface UserProfile {
   username: string;
   avatar_url: string;
   bio: string;
-  last_seen: string;
 }
 
 interface Conversation {

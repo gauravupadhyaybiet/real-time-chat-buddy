@@ -94,15 +94,26 @@ export default function ChatConversation() {
   const loadOtherUser = async () => {
     if (!currentUserId) return;
 
-    const { data } = await supabase
-      .from('conversation_participants')
-      .select('user_id, user_profiles!inner(*)')
-      .eq('conversation_id', conversationId)
-      .neq('user_id', currentUserId)
+    const { data: conv } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('id', conversationId)
       .maybeSingle();
 
-    if (data) {
-      setOtherUser(data.user_profiles as unknown as UserProfile);
+    if (!conv) return;
+
+    const otherUserId = conv.participant_one === currentUserId 
+      ? conv.participant_two 
+      : conv.participant_one;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', otherUserId)
+      .maybeSingle();
+
+    if (profile) {
+      setOtherUser(profile as UserProfile);
     }
   };
 
