@@ -13,9 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 interface StatusPost {
   id: string;
   user_id: string;
-  content_type: 'text' | 'image';
   content: string;
-  background_color: string;
+  media_url?: string | null;
+  media_type?: string | null;
   created_at: string;
   expires_at: string;
   user_profiles: {
@@ -53,7 +53,7 @@ export default function Status() {
           {
             event: '*',
             schema: 'public',
-            table: 'status_posts'
+            table: 'statuses'
           },
           () => {
             loadStatuses();
@@ -80,10 +80,10 @@ export default function Status() {
     if (!currentUserId) return;
 
     const { data: statusData } = await supabase
-      .from('status_posts')
+      .from('statuses')
       .select(`
         *,
-        user_profiles!inner(username, avatar_url)
+        profiles!inner(username, avatar_url)
       `)
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false });
@@ -105,14 +105,15 @@ export default function Status() {
             .from('status_views')
             .select('id')
             .eq('status_id', status.id)
-            .eq('viewer_id', currentUserId)
+            .eq('user_id', currentUserId)
             .maybeSingle();
 
           return {
             ...status,
             view_count: viewCount || 0,
             reaction_count: reactionCount || 0,
-            has_viewed: !!hasViewed
+            has_viewed: !!hasViewed,
+            user_profiles: status.profiles
           };
         })
       );
@@ -142,11 +143,11 @@ export default function Status() {
       return;
     }
 
-    const { error } = await supabase.from('status_posts').insert({
+    const { error } = await supabase.from('statuses').insert({
       user_id: currentUserId,
-      content_type: contentType,
       content: contentType === 'text' ? content : imageUrl,
-      background_color: contentType === 'text' ? bgColor : '#000000'
+      media_url: contentType === 'image' ? imageUrl : null,
+      media_type: contentType === 'image' ? 'image' : null
     });
 
     if (error) {
@@ -174,7 +175,7 @@ export default function Status() {
 
     await supabase.from('status_views').insert({
       status_id: statusId,
-      viewer_id: currentUserId
+      user_id: currentUserId
     });
 
     navigate(`/status/${statusId}`);
@@ -283,22 +284,22 @@ export default function Status() {
               onClick={() => viewStatus(status.id)}
               className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden"
             >
-              {status.content_type === 'text' ? (
+              {status.media_url ? (
+                <div className="aspect-[9/16] relative bg-gray-900">
+                  <img
+                    src={status.media_url}
+                    alt="Status"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
                 <div
                   className="aspect-[9/16] flex items-center justify-center p-4 relative"
-                  style={{ backgroundColor: status.background_color }}
+                  style={{ backgroundColor: bgColor }}
                 >
                   <p className="text-white text-center font-medium break-words">
                     {status.content}
                   </p>
-                </div>
-              ) : (
-                <div className="aspect-[9/16] relative bg-gray-900">
-                  <img
-                    src={status.content}
-                    alt="Status"
-                    className="w-full h-full object-cover"
-                  />
                 </div>
               )}
               <div className="p-3 bg-white">

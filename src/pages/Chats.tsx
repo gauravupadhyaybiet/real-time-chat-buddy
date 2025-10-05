@@ -12,7 +12,7 @@ interface UserProfile {
   id: string;
   username: string;
   avatar_url: string;
-  status: string;
+  bio: string;
   last_seen: string;
 }
 
@@ -53,63 +53,57 @@ export default function Chats() {
 
   const ensureUserProfile = async (userId: string, email: string) => {
     const { data: profile } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
 
     if (!profile) {
       const username = email.split('@')[0];
-      await supabase.from('user_profiles').insert({
+      await supabase.from('profiles').insert({
         id: userId,
         username: username,
         avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
-        status: 'Hey there! I am using this app'
+        bio: 'Hey there! I am using this app'
       });
     }
   };
 
   const loadConversations = async (userId: string) => {
-    const { data: participants } = await supabase
-      .from('conversation_participants')
-      .select(`
-        conversation_id,
-        conversations!inner(id, updated_at)
-      `)
-      .eq('user_id', userId);
+    const { data: convData } = await supabase
+      .from('conversations')
+      .select('*')
+      .or(`participant_one.eq.${userId},participant_two.eq.${userId}`);
 
-    if (!participants) {
+    if (!convData) {
       setLoading(false);
       return;
     }
 
-    const conversationIds = participants.map(p => p.conversation_id);
-
     const conversationsData: Conversation[] = [];
 
-    for (const convId of conversationIds) {
-      const { data: otherParticipants } = await supabase
-        .from('conversation_participants')
-        .select('user_id, user_profiles!inner(*)')
-        .eq('conversation_id', convId)
-        .neq('user_id', userId)
+    for (const conv of convData) {
+      const otherUserId = conv.participant_one === userId ? conv.participant_two : conv.participant_one;
+
+      const { data: otherUserProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', otherUserId)
         .maybeSingle();
 
-      if (otherParticipants) {
+      if (otherUserProfile) {
         const { data: lastMessage } = await supabase
           .from('messages')
           .select('content, created_at')
-          .eq('conversation_id', convId)
+          .eq('conversation_id', conv.id)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
-        const conv = participants.find(p => p.conversation_id === convId);
-
         conversationsData.push({
-          id: convId,
-          updated_at: conv?.conversations?.updated_at || new Date().toISOString(),
-          other_user: otherParticipants.user_profiles as unknown as UserProfile,
+          id: conv.id,
+          updated_at: conv.created_at,
+          other_user: otherUserProfile as unknown as UserProfile,
           last_message: lastMessage || undefined
         });
       }
@@ -125,9 +119,8 @@ export default function Chats() {
 
   const loadAllUsers = async (currentUserId: string) => {
     const { data } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .neq('id', currentUserId);
+      .from('profiles')
+      .select('*');
 
     if (data) {
       setAllUsers(data);
@@ -137,30 +130,27 @@ export default function Chats() {
   const startConversation = async (otherUserId: string) => {
     if (!currentUserId) return;
 
+    const participant1 = currentUserId < otherUserId ? currentUserId : otherUserId;
+    const participant2 = currentUserId < otherUserId ? otherUserId : currentUserId;
+
     const { data: existingConv } = await supabase
-      .from('conversation_participants')
-      .select('conversation_id')
-      .eq('user_id', currentUserId);
+      .from('conversations')
+      .select('*')
+      .eq('participant_one', participant1)
+      .eq('participant_two', participant2)
+      .maybeSingle();
 
     if (existingConv) {
-      for (const conv of existingConv) {
-        const { data: otherParticipant } = await supabase
-          .from('conversation_participants')
-          .select('user_id')
-          .eq('conversation_id', conv.conversation_id)
-          .eq('user_id', otherUserId)
-          .maybeSingle();
-
-        if (otherParticipant) {
-          navigate(`/chat/${conv.conversation_id}`);
-          return;
-        }
-      }
+      navigate(`/chat/${existingConv.id}`);
+      return;
     }
 
     const { data: newConv, error } = await supabase
       .from('conversations')
-      .insert({})
+      .insert({
+        participant_one: participant1,
+        participant_two: participant2
+      })
       .select()
       .single();
 
@@ -172,11 +162,6 @@ export default function Chats() {
       });
       return;
     }
-
-    await supabase.from('conversation_participants').insert([
-      { conversation_id: newConv.id, user_id: currentUserId },
-      { conversation_id: newConv.id, user_id: otherUserId }
-    ]);
 
     navigate(`/chat/${newConv.id}`);
   };
@@ -246,7 +231,7 @@ export default function Chats() {
                 </Avatar>
                 <div className="flex-1">
                   <div className="font-semibold">{user.username}</div>
-                  <div className="text-sm text-gray-500">{user.status}</div>
+                  <div className="text-sm text-gray-500">{user.bio || 'Hey there!'}</div>
                 </div>
               </div>
             ))}
