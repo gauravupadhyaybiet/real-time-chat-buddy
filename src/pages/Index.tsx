@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Image as ImageIcon, LogOut, Sparkles } from 'lucide-react';
+import { LogOut, Sparkles } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-6">
         <div className="flex items-center justify-between mb-8 bg-card rounded-lg p-6 shadow-md border">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16 border-2 border-primary">
@@ -70,71 +70,29 @@ const Index = () => {
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-6">
-          <Card
-            onClick={() => navigate('/ai-chat')}
-            className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] border-primary/20 bg-card"
-          >
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="bg-primary p-4 rounded-full">
-                <Sparkles className="h-8 w-8 text-primary-foreground" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground mb-2">
-                  AI Assistant
-                </h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Chat with Gemini AI using voice and text
-                </p>
-              </div>
-              <Button className="w-full bg-primary hover:bg-primary/90">
-                Start AI Chat
-              </Button>
+        <Card
+          onClick={() => navigate('/ai-chat')}
+          className="p-8 cursor-pointer hover:shadow-xl transition-all hover:scale-[1.01] border-primary/20 bg-card max-w-md mx-auto"
+        >
+          <div className="flex flex-col items-center text-center gap-6">
+            <div className="bg-primary p-6 rounded-full">
+              <Sparkles className="h-12 w-12 text-primary-foreground" />
             </div>
-          </Card>
-
-          <Card
-            onClick={() => navigate('/chats')}
-            className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] bg-card"
-          >
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="bg-secondary p-4 rounded-full">
-                <MessageSquare className="h-8 w-8 text-secondary-foreground" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground mb-2">Real-time Chat</h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Message friends instantly
-                </p>
-              </div>
-              <Button variant="secondary" className="w-full">
-                Open Chats
-              </Button>
+            <div>
+              <h2 className="text-2xl font-semibold text-foreground mb-3">
+                AI Assistant
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                Chat with Gemini AI using voice and text. Get intelligent responses powered by Google's advanced AI model.
+              </p>
             </div>
-          </Card>
+            <Button size="lg" className="w-full bg-primary hover:bg-primary/90">
+              Start AI Chat
+            </Button>
+          </div>
+        </Card>
 
-          <Card
-            onClick={() => navigate('/status')}
-            className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] bg-card"
-          >
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="bg-accent p-4 rounded-full">
-                <ImageIcon className="h-8 w-8 text-accent-foreground" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground mb-2">Status Updates</h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Share moments with reactions
-                </p>
-              </div>
-              <Button variant="outline" className="w-full">
-                View Status
-              </Button>
-            </div>
-          </Card>
-        </div>
-
-        <Card className="p-6 bg-card border">
+        <Card className="mt-8 p-6 bg-card border">
           <h3 className="font-semibold text-foreground mb-4 text-lg">Your Profile</h3>
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -142,8 +100,8 @@ const Index = () => {
               <span className="font-medium text-foreground">{profile?.username || 'Not set'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground min-w-[120px]">Bio:</span>
-              <span className="text-foreground">{profile?.bio || 'No bio yet'}</span>
+              <span className="text-muted-foreground min-w-[120px]">Email:</span>
+              <span className="text-foreground">{user?.email}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground min-w-[120px]">Member since:</span>

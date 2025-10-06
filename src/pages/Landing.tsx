@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Bot, Volume2, Sparkles, Zap, Shield, ArrowRight, Star, Users, MessageCircle } from "lucide-react";
+import { MessageSquare, Bot, Volume2, Sparkles, Zap, Shield, ArrowRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Landing() {
@@ -58,20 +58,6 @@ export default function Landing() {
                 <Button size="lg" variant="outline" className="text-lg px-8 py-6">
                   Try AI Chat
                   <Bot className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/chats">
-                <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
-                  Real-time Chat
-                  <MessageCircle className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="/status">
-                <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
-                  Status Updates
-                  <Users className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
             </div>
@@ -151,7 +137,7 @@ export default function Landing() {
             </div>
             <h3 className="text-xl font-semibold text-foreground">Create Account</h3>
             <p className="text-muted-foreground">
-              Sign up to access all features including AI chat, real-time messaging, and status updates
+              Sign up to access AI chat with voice and text capabilities
             </p>
           </div>
           
@@ -169,9 +155,9 @@ export default function Landing() {
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto text-primary font-bold text-xl">
               3
             </div>
-            <h3 className="text-xl font-semibold text-foreground">Share & Connect</h3>
+            <h3 className="text-xl font-semibold text-foreground">Explore Features</h3>
             <p className="text-muted-foreground">
-              Post status updates and chat with friends in real-time
+              Use voice or text input to interact with AI naturally
             </p>
           </div>
         </div>
