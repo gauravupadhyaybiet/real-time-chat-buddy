@@ -181,14 +181,14 @@ export default function AIChat() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <header className="border-b bg-white/80 backdrop-blur-lg shadow-sm">
+    <div className="flex flex-col h-screen bg-background">
+      <header className="border-b bg-card backdrop-blur-lg shadow-sm">
         <div className="flex h-16 items-center px-4 gap-4 max-w-4xl mx-auto">
           <Button variant="ghost" size="icon" onClick={() => navigate('/app')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-xl font-bold text-foreground">
               AI Assistant
             </h1>
             <p className="text-xs text-muted-foreground">Powered by Gemini</p>
@@ -205,9 +205,9 @@ export default function AIChat() {
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 && (
-            <Card className="p-8 text-center bg-white/50 backdrop-blur">
+            <Card className="p-8 text-center bg-card">
               <div className="text-4xl mb-4">🤖</div>
-              <h2 className="text-xl font-semibold mb-2">Welcome to AI Chat!</h2>
+              <h2 className="text-xl font-semibold mb-2 text-foreground">Welcome to AI Chat!</h2>
               <p className="text-muted-foreground">
                 Start a conversation or use voice input to chat with me
               </p>
@@ -222,8 +222,8 @@ export default function AIChat() {
               <Card
                 className={`max-w-[80%] p-4 ${
                   message.role === 'user'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                    : 'bg-white shadow-md'
+                    ? 'bg-chat-bubble-user text-chat-bubble-user-foreground'
+                    : 'bg-chat-bubble-ai text-chat-bubble-ai-foreground'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -240,13 +240,13 @@ export default function AIChat() {
 
           {isLoading && (
             <div className="flex justify-start">
-              <Card className="max-w-[80%] p-4 bg-white shadow-md">
+              <Card className="max-w-[80%] p-4 bg-chat-bubble-ai text-chat-bubble-ai-foreground">
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">🤖</div>
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </Card>
@@ -257,7 +257,7 @@ export default function AIChat() {
         </div>
       </div>
 
-      <div className="border-t bg-white/80 backdrop-blur-lg p-4">
+      <div className="border-t bg-card p-4">
         <div className="max-w-4xl mx-auto flex gap-2">
           {isSupported && (
             <Button
@@ -276,13 +276,13 @@ export default function AIChat() {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={isLoading || isListening}
-            className="flex-1 bg-white"
+            className="flex-1 bg-chat-input"
           />
           
           <Button
             onClick={() => sendMessage()}
             disabled={!input.trim() || isLoading}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+            className="bg-primary hover:bg-primary/90"
           >
             <Send className="h-4 w-4" />
           </Button>

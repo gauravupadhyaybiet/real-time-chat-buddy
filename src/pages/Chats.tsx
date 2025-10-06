@@ -185,68 +185,72 @@ export default function Chats() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-green-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto p-4">
-        <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/app')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-            <h1 className="text-2xl font-bold text-gray-800">Chats</h1>
+        <div className="bg-card rounded-lg p-4 mb-6 shadow-md border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/app')}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-2xl font-bold text-foreground">Chats</h1>
+            </div>
+            <MessageSquare className="h-6 w-6 text-primary" />
           </div>
-          <MessageSquare className="h-6 w-6 text-teal-600" />
         </div>
 
-        <Card className="mb-4 p-4">
+        <Card className="mb-4 p-4 bg-card">
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-background"
             />
           </div>
         </Card>
 
         {searchQuery && (
-          <Card className="mb-4 p-2">
-            <div className="text-sm font-semibold text-gray-600 px-4 py-2">
+          <Card className="mb-4 p-2 bg-card">
+            <div className="text-sm font-semibold text-muted-foreground px-4 py-2">
               Search Results
             </div>
             {filteredUsers.map((user) => (
               <div
                 key={user.id}
                 onClick={() => startConversation(user.id)}
-                className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                className="flex items-center gap-3 p-4 hover:bg-accent cursor-pointer transition-colors rounded-md"
               >
                 <Avatar>
                   <AvatarImage src={user.avatar_url} />
-                  <AvatarFallback>{user.username[0].toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="bg-secondary text-secondary-foreground">
+                    {user.username[0].toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="font-semibold">{user.username}</div>
-                  <div className="text-sm text-gray-500">{user.bio || 'Hey there!'}</div>
+                  <div className="font-semibold text-foreground">{user.username}</div>
+                  <div className="text-sm text-muted-foreground">{user.bio || 'Hey there!'}</div>
                 </div>
               </div>
             ))}
             {filteredUsers.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 No users found
               </div>
             )}
           </Card>
         )}
 
-        <Card className="p-2">
+        <Card className="p-2 bg-card">
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Loading...</div>
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
           ) : conversations.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               No conversations yet. Search for users to start chatting!
             </div>
           ) : (
@@ -254,26 +258,26 @@ export default function Chats() {
               <div
                 key={conv.id}
                 onClick={() => navigate(`/chat/${conv.id}`)}
-                className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                className="flex items-center gap-3 p-4 hover:bg-accent cursor-pointer transition-colors rounded-md"
               >
                 <Avatar>
                   <AvatarImage src={conv.other_user.avatar_url} />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-secondary text-secondary-foreground">
                     {conv.other_user.username[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">
-                    <div className="font-semibold truncate">
+                    <div className="font-semibold truncate text-foreground">
                       {conv.other_user.username}
                     </div>
                     {conv.last_message && (
-                      <div className="text-xs text-gray-500 ml-2">
+                      <div className="text-xs text-muted-foreground ml-2">
                         {formatTime(conv.last_message.created_at)}
                       </div>
                     )}
                   </div>
-                  <div className="text-sm text-gray-500 truncate">
+                  <div className="text-sm text-muted-foreground truncate">
                     {conv.last_message?.content || 'No messages yet'}
                   </div>
                 </div>

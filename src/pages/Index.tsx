@@ -43,18 +43,18 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <div className="max-w-6xl mx-auto p-4">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-14 w-14 border-2 border-primary shadow-lg">
+    <div className="min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="flex items-center justify-between mb-8 bg-card rounded-lg p-6 shadow-md border">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 border-2 border-primary">
               <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+              <AvatarFallback className="bg-primary text-primary-foreground text-xl">
                 {profile?.username?.[0]?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-foreground">
                 Welcome, {profile?.username || 'User'}!
               </h1>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
@@ -64,82 +64,91 @@ const Index = () => {
             variant="outline"
             size="icon"
             onClick={handleLogout}
-            className="hover:bg-red-50 hover:text-red-600 border-2"
+            className="hover:bg-destructive hover:text-destructive-foreground"
           >
             <LogOut className="h-5 w-5" />
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6 mb-6">
           <Card
             onClick={() => navigate('/ai-chat')}
-            className="p-6 cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200"
+            className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] border-primary/20 bg-card"
           >
-            <div className="flex items-center gap-4 mb-4">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-3 rounded-full shadow-lg">
-                <Sparkles className="h-6 w-6 text-white" />
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="bg-primary p-4 rounded-full">
+                <Sparkles className="h-8 w-8 text-primary-foreground" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
                   AI Assistant
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  Chat with Gemini AI
+                <p className="text-sm text-muted-foreground mb-4">
+                  Chat with Gemini AI using voice and text
                 </p>
               </div>
+              <Button className="w-full bg-primary hover:bg-primary/90">
+                Start AI Chat
+              </Button>
             </div>
-            <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-md">
-              Start AI Chat
-            </Button>
           </Card>
 
           <Card
             onClick={() => navigate('/chats')}
-            className="p-6 cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-teal-50 to-green-50 border-2 border-teal-200"
+            className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] bg-card"
           >
-            <div className="flex items-center gap-4 mb-4">
-              <div className="bg-gradient-to-r from-teal-500 to-green-500 p-3 rounded-full shadow-lg">
-                <MessageSquare className="h-6 w-6 text-white" />
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="bg-secondary p-4 rounded-full">
+                <MessageSquare className="h-8 w-8 text-secondary-foreground" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-teal-700">Messages</h2>
-                <p className="text-sm text-muted-foreground">
-                  Chat with friends
+                <h2 className="text-xl font-semibold text-foreground mb-2">Real-time Chat</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Message friends instantly
                 </p>
               </div>
+              <Button variant="secondary" className="w-full">
+                Open Chats
+              </Button>
             </div>
-            <Button className="w-full bg-gradient-to-r from-teal-500 to-green-500 hover:from-teal-600 hover:to-green-600 shadow-md">
-              Open Chats
-            </Button>
           </Card>
 
           <Card
             onClick={() => navigate('/status')}
-            className="p-6 cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-pink-50 to-orange-50 border-2 border-pink-200"
+            className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] bg-card"
           >
-            <div className="flex items-center gap-4 mb-4">
-              <div className="bg-gradient-to-r from-pink-500 to-orange-500 p-3 rounded-full shadow-lg">
-                <ImageIcon className="h-6 w-6 text-white" />
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="bg-accent p-4 rounded-full">
+                <ImageIcon className="h-8 w-8 text-accent-foreground" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-pink-700">Status</h2>
-                <p className="text-sm text-muted-foreground">
-                  Share your moments
+                <h2 className="text-xl font-semibold text-foreground mb-2">Status Updates</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Share moments with reactions
                 </p>
               </div>
+              <Button variant="outline" className="w-full">
+                View Status
+              </Button>
             </div>
-            <Button className="w-full bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 shadow-md">
-              View Status
-            </Button>
           </Card>
         </div>
 
-        <Card className="mt-6 p-6 bg-white/50 backdrop-blur">
-          <h3 className="font-semibold text-gray-800 mb-3">Your Profile</h3>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p><strong>Username:</strong> {profile?.username || 'Not set'}</p>
-            <p><strong>Bio:</strong> {profile?.bio || 'No bio yet'}</p>
-            <p><strong>Member since:</strong> {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Unknown'}</p>
+        <Card className="p-6 bg-card border">
+          <h3 className="font-semibold text-foreground mb-4 text-lg">Your Profile</h3>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground min-w-[120px]">Username:</span>
+              <span className="font-medium text-foreground">{profile?.username || 'Not set'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground min-w-[120px]">Bio:</span>
+              <span className="text-foreground">{profile?.bio || 'No bio yet'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground min-w-[120px]">Member since:</span>
+              <span className="text-foreground">{profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Unknown'}</span>
+            </div>
           </div>
         </Card>
       </div>

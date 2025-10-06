@@ -193,94 +193,98 @@ export default function Status() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-green-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto p-4">
-        <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/app')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-            <h1 className="text-2xl font-bold text-gray-800">Status</h1>
-          </div>
-
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-teal-600 hover:bg-teal-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Status
+        <div className="bg-card rounded-lg p-4 mb-6 shadow-md border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/app')}
+              >
+                <ArrowLeft className="h-5 w-5" />
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create Status</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="flex gap-2">
+              <h1 className="text-2xl font-bold text-foreground">Status</h1>
+            </div>
+
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Status
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-card">
+                <DialogHeader>
+                  <DialogTitle className="text-foreground">Create Status</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <Button
+                      variant={contentType === 'text' ? 'default' : 'outline'}
+                      onClick={() => setContentType('text')}
+                      className="flex-1"
+                    >
+                      <Type className="h-4 w-4 mr-2" />
+                      Text
+                    </Button>
+                    <Button
+                      variant={contentType === 'image' ? 'default' : 'outline'}
+                      onClick={() => setContentType('image')}
+                      className="flex-1"
+                    >
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Image
+                    </Button>
+                  </div>
+
+                  {contentType === 'text' ? (
+                    <>
+                      <Textarea
+                        placeholder="What's on your mind?"
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        rows={4}
+                        className="bg-background"
+                      />
+                      <div>
+                        <label className="text-sm font-medium mb-2 block text-foreground">
+                          Background Color
+                        </label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {bgColors.map((color) => (
+                            <button
+                              key={color}
+                              onClick={() => setBgColor(color)}
+                              className={`h-10 rounded-lg border-2 ${
+                                bgColor === color ? 'border-primary' : 'border-border'
+                              }`}
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Input
+                      placeholder="Enter image URL (e.g., from Pexels)"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      className="bg-background"
+                    />
+                  )}
+
                   <Button
-                    variant={contentType === 'text' ? 'default' : 'outline'}
-                    onClick={() => setContentType('text')}
-                    className="flex-1"
+                    onClick={createStatus}
+                    className="w-full bg-primary hover:bg-primary/90"
                   >
-                    <Type className="h-4 w-4 mr-2" />
-                    Text
-                  </Button>
-                  <Button
-                    variant={contentType === 'image' ? 'default' : 'outline'}
-                    onClick={() => setContentType('image')}
-                    className="flex-1"
-                  >
-                    <ImageIcon className="h-4 w-4 mr-2" />
-                    Image
+                    Post Status
                   </Button>
                 </div>
-
-                {contentType === 'text' ? (
-                  <>
-                    <Textarea
-                      placeholder="What's on your mind?"
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      rows={4}
-                    />
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Background Color
-                      </label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {bgColors.map((color) => (
-                          <button
-                            key={color}
-                            onClick={() => setBgColor(color)}
-                            className={`h-10 rounded-lg border-2 ${
-                              bgColor === color ? 'border-gray-800' : 'border-gray-200'
-                            }`}
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <Input
-                    placeholder="Enter image URL (e.g., from Pexels)"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                  />
-                )}
-
-                <Button
-                  onClick={createStatus}
-                  className="w-full bg-teal-600 hover:bg-teal-700"
-                >
-                  Post Status
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -288,10 +292,10 @@ export default function Status() {
             <Card
               key={status.id}
               onClick={() => viewStatus(status.id)}
-              className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden"
+              className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden bg-card"
             >
               {status.media_url ? (
-                <div className="aspect-[9/16] relative bg-gray-900">
+                <div className="aspect-[9/16] relative bg-muted">
                   <img
                     src={status.media_url}
                     alt="Status"
@@ -308,21 +312,21 @@ export default function Status() {
                   </p>
                 </div>
               )}
-              <div className="p-3 bg-white">
+              <div className="p-3 bg-card">
                 <div className="flex items-center gap-2 mb-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={status.user_profiles.avatar_url} />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-secondary text-secondary-foreground">
                       {status.user_profiles.username[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm truncate">
+                    <div className="font-semibold text-sm truncate text-foreground">
                       {status.user_profiles.username}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-gray-500">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Eye className="h-3 w-3" />
                     {status.view_count}
@@ -332,7 +336,7 @@ export default function Status() {
                     {status.reaction_count}
                   </span>
                   {!status.has_viewed && (
-                    <span className="text-teal-600 font-semibold">New</span>
+                    <span className="text-primary font-semibold">New</span>
                   )}
                 </div>
               </div>
@@ -340,7 +344,7 @@ export default function Status() {
           ))}
 
           {statuses.length === 0 && (
-            <div className="col-span-full text-center py-12 text-gray-500">
+            <div className="col-span-full text-center py-12 text-muted-foreground">
               No active status updates. Be the first to post!
             </div>
           )}

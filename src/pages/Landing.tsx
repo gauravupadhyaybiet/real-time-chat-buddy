@@ -6,20 +6,20 @@ import { Link } from "react-router-dom";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b bg-card backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <Bot className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            <span className="text-xl font-bold text-primary">
               Gemini Chat AI
             </span>
           </div>
           <Link to="/auth">
-            <Button className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary">
+            <Button className="bg-primary hover:bg-primary/90">
               Get Started
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -35,9 +35,9 @@ export default function Landing() {
             Powered by Google Gemini AI
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
             Experience the Future of{" "}
-            <span className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
+            <span className="text-primary">
               AI Conversations
             </span>
           </h1>
@@ -49,7 +49,7 @@ export default function Landing() {
           <div className="flex flex-col gap-4 items-center pt-6">
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/auth">
-                <Button size="lg" className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-lg px-8 py-6">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-6">
                   Start Chatting
                   <MessageSquare className="ml-2 h-5 w-5" />
                 </Button>
@@ -63,13 +63,13 @@ export default function Landing() {
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/chats">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-teal-50 hover:bg-teal-100 border-teal-200">
+                <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
                   Real-time Chat
                   <MessageCircle className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/status">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-green-50 hover:bg-green-100 border-green-200">
+                <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
                   Status Updates
                   <Users className="ml-2 h-5 w-5" />
                 </Button>
@@ -90,45 +90,45 @@ export default function Landing() {
       {/* Features Section */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Powerful Features</h2>
+          <h2 className="text-3xl font-bold mb-4 text-foreground">Powerful Features</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Everything you need for intelligent AI conversations
           </p>
         </div>
         
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-card to-card/50">
+          <Card className="border shadow-lg hover:shadow-xl transition-shadow bg-card">
             <CardContent className="p-6 text-center">
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Bot className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Advanced AI</h3>
+              <h3 className="text-xl font-semibold mb-2 text-foreground">Advanced AI</h3>
               <p className="text-muted-foreground">
                 Powered by Google's Gemini AI for intelligent, context-aware conversations
               </p>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-card to-card/50">
+          <Card className="border shadow-lg hover:shadow-xl transition-shadow bg-card">
             <CardContent className="p-6 text-center">
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Volume2 className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Voice Synthesis</h3>
+              <h3 className="text-xl font-semibold mb-2 text-foreground">Voice Synthesis</h3>
               <p className="text-muted-foreground">
-                Natural-sounding speech with ElevenLabs premium voice technology
+                Natural-sounding speech with built-in voice technology
               </p>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-card to-card/50">
+          <Card className="border shadow-lg hover:shadow-xl transition-shadow bg-card">
             <CardContent className="p-6 text-center">
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Secure & Private</h3>
+              <h3 className="text-xl font-semibold mb-2 text-foreground">Secure & Private</h3>
               <p className="text-muted-foreground">
-                Your API keys are stored locally and never sent to our servers
+                Your data is stored securely with industry-standard encryption
               </p>
             </CardContent>
           </Card>
@@ -136,9 +136,9 @@ export default function Landing() {
       </section>
 
       {/* How It Works Section */}
-      <section className="container mx-auto px-4 py-16 bg-muted/30 rounded-2xl mx-4">
+      <section className="container mx-auto px-4 py-16 bg-muted/30 rounded-2xl">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">How It Works</h2>
+          <h2 className="text-3xl font-bold mb-4 text-foreground">How It Works</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Get started in three simple steps
           </p>
@@ -149,9 +149,9 @@ export default function Landing() {
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto text-primary font-bold text-xl">
               1
             </div>
-            <h3 className="text-xl font-semibold">Set API Keys</h3>
+            <h3 className="text-xl font-semibold text-foreground">Create Account</h3>
             <p className="text-muted-foreground">
-              Add your Google Gemini and ElevenLabs API keys for full functionality
+              Sign up to access all features including AI chat, real-time messaging, and status updates
             </p>
           </div>
           
@@ -159,7 +159,7 @@ export default function Landing() {
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto text-primary font-bold text-xl">
               2
             </div>
-            <h3 className="text-xl font-semibold">Start Chatting</h3>
+            <h3 className="text-xl font-semibold text-foreground">Start Chatting</h3>
             <p className="text-muted-foreground">
               Ask questions, get help, or have natural conversations with AI
             </p>
@@ -169,9 +169,9 @@ export default function Landing() {
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto text-primary font-bold text-xl">
               3
             </div>
-            <h3 className="text-xl font-semibold">Listen & Learn</h3>
+            <h3 className="text-xl font-semibold text-foreground">Share & Connect</h3>
             <p className="text-muted-foreground">
-              Hear responses with natural voice synthesis or read the text
+              Post status updates and chat with friends in real-time
             </p>
           </div>
         </div>
@@ -180,12 +180,12 @@ export default function Landing() {
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-2xl mx-auto space-y-6">
-          <h2 className="text-3xl font-bold">Ready to Experience AI?</h2>
+          <h2 className="text-3xl font-bold text-foreground">Ready to Experience AI?</h2>
           <p className="text-xl text-muted-foreground">
             Join thousands of users already having intelligent conversations with AI
           </p>
           <Link to="/auth">
-            <Button size="lg" className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-lg px-8 py-6">
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-6">
               Start Your Journey
               <Zap className="ml-2 h-5 w-5" />
             </Button>
