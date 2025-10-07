@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, Send, Mic, MicOff, Volume2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import { useGeminiAI } from '@/hooks/useGeminiAI';
+import { ApiKeyDialog } from '@/components/chat/ApiKeyDialog';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,6 +21,7 @@ export default function AIChat() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [apiKey, setApiKey] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const {
@@ -29,6 +32,21 @@ export default function AIChat() {
     resetTranscript,
     isSupported,
   } = useSpeechRecognition();
+
+  const { sendMessage: sendGeminiMessage } = useGeminiAI();
+
+  useEffect(() => {
+    // Load API key from localStorage
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) {
+      setApiKey(savedKey);
+    }
+  }, []);
+
+  const handleApiKeyChange = (key: string) => {
+    setApiKey(key);
+    localStorage.setItem('gemini_api_key', key);
+  };
 
 
   useEffect(() => {
@@ -60,6 +78,15 @@ export default function AIChat() {
   const sendMessage = async (text: string = input) => {
     if (!text.trim() || isLoading) return;
 
+    if (!apiKey) {
+      toast({
+        title: 'API Key Required',
+        description: 'Please set your Gemini API key to start chatting.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const userMessage: Message = { role: 'user', content: text.trim() };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
@@ -67,28 +94,13 @@ export default function AIChat() {
     setIsLoading(true);
 
     try {
-      // Mock AI response for now - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const aiResponse = await sendGeminiMessage(text.trim(), apiKey);
       
-      const mockResponses = [
-        "I'm here to help! How can I assist you today?",
-        "That's an interesting question. Let me think about that...",
-        "I understand. Could you tell me more about that?",
-        "Based on what you've shared, I would suggest...",
-        "That's a great point! Here's what I think...",
-      ];
-      
-      const assistantMessage = mockResponses[Math.floor(Math.random() * mockResponses.length)];
-      
-      setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
-      speak(assistantMessage);
+      setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+      speak(aiResponse);
     } catch (error) {
       console.error('Error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to send message',
-        variant: 'destructive',
-      });
+      // Error toast is already handled by useGeminiAI hook
     } finally {
       setIsLoading(false);
     }
@@ -125,12 +137,15 @@ export default function AIChat() {
             </h1>
             <p className="text-xs text-muted-foreground">Powered by Gemini</p>
           </div>
-          {isSpeaking && (
-            <Button variant="outline" size="sm" onClick={stopSpeaking}>
-              <Volume2 className="h-4 w-4 mr-2 animate-pulse" />
-              Stop
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <ApiKeyDialog apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
+            {isSpeaking && (
+              <Button variant="outline" size="sm" onClick={stopSpeaking}>
+                <Volume2 className="h-4 w-4 mr-2 animate-pulse" />
+                Stop
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -140,9 +155,14 @@ export default function AIChat() {
             <Card className="p-8 text-center bg-card">
               <div className="text-4xl mb-4">🤖</div>
               <h2 className="text-xl font-semibold mb-2 text-foreground">Welcome to AI Chat!</h2>
-              <p className="text-muted-foreground">
-                Start a conversation or use voice input to chat with me
+              <p className="text-muted-foreground mb-4">
+                {apiKey 
+                  ? "Start a conversation or use voice input to chat with me" 
+                  : "Please set your Gemini API key to get started"}
               </p>
+              {!apiKey && (
+                <ApiKeyDialog apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
+              )}
             </Card>
           )}
 
