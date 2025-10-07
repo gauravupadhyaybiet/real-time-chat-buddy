@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -31,17 +30,6 @@ export default function AIChat() {
     isSupported,
   } = useSpeechRecognition();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -79,77 +67,21 @@ export default function AIChat() {
     setIsLoading(true);
 
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
+      // Mock AI response for now - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const response = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let assistantMessage = '';
-
-      if (reader) {
-        let buffer = '';
-        
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') continue;
-
-              try {
-                const parsed = JSON.parse(data);
-                const content = parsed.choices?.[0]?.delta?.content;
-                
-                if (content) {
-                  assistantMessage += content;
-                  setMessages(prev => {
-                    const newMessages = [...prev];
-                    const lastMessage = newMessages[newMessages.length - 1];
-                    
-                    if (lastMessage?.role === 'assistant') {
-                      newMessages[newMessages.length - 1] = {
-                        role: 'assistant',
-                        content: assistantMessage,
-                      };
-                    } else {
-                      newMessages.push({
-                        role: 'assistant',
-                        content: assistantMessage,
-                      });
-                    }
-                    return newMessages;
-                  });
-                }
-              } catch (e) {
-                // Ignore parse errors for incomplete JSON
-              }
-            }
-          }
-        }
-
-        // Auto-speak the response
-        if (assistantMessage) {
-          speak(assistantMessage);
-        }
-      }
+      const mockResponses = [
+        "I'm here to help! How can I assist you today?",
+        "That's an interesting question. Let me think about that...",
+        "I understand. Could you tell me more about that?",
+        "Based on what you've shared, I would suggest...",
+        "That's a great point! Here's what I think...",
+      ];
+      
+      const assistantMessage = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+      
+      setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
+      speak(assistantMessage);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -184,7 +116,7 @@ export default function AIChat() {
     <div className="flex flex-col h-screen bg-background">
       <header className="border-b bg-card backdrop-blur-lg shadow-sm">
         <div className="flex h-16 items-center px-4 gap-4 max-w-4xl mx-auto">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/app')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
