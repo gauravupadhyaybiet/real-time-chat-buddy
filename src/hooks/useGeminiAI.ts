@@ -21,7 +21,7 @@ export function useGeminiAI() {
     
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: {
@@ -38,10 +38,10 @@ export function useGeminiAI() {
               }
             ],
             generationConfig: {
-              temperature: 0.7,
+              temperature: 0.9,
               topK: 40,
               topP: 0.95,
-              maxOutputTokens: 1024,
+              maxOutputTokens: 2048,
             },
           }),
         }
