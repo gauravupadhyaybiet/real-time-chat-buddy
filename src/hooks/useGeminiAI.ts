@@ -12,7 +12,11 @@ export function useGeminiAI() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const sendMessage = async (message: string, apiKey: string): Promise<string> => {
+  const sendMessage = async (
+    message: string, 
+    apiKey: string,
+    files?: { data: string; mimeType: string }[]
+  ): Promise<string> => {
     if (!apiKey) {
       throw new Error("API key is required");
     }
@@ -20,8 +24,21 @@ export function useGeminiAI() {
     setIsLoading(true);
     
     try {
+      const parts: any[] = [{ text: message }];
+      
+      if (files && files.length > 0) {
+        files.forEach(file => {
+          parts.push({
+            inline_data: {
+              mime_type: file.mimeType,
+              data: file.data
+            }
+          });
+        });
+      }
+
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: {
@@ -30,11 +47,7 @@ export function useGeminiAI() {
           body: JSON.stringify({
             contents: [
               {
-                parts: [
-                  {
-                    text: message
-                  }
-                ]
+                parts: parts
               }
             ],
             generationConfig: {

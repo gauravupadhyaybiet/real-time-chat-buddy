@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Send, Mic, MicOff, Volume2 } from 'lucide-react';
+import { ArrowLeft, Send, Mic, MicOff, Volume2, Paperclip, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useGeminiAI } from '@/hooks/useGeminiAI';
@@ -12,6 +12,7 @@ import { ApiKeyDialog } from '@/components/chat/ApiKeyDialog';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  files?: { data: string; mimeType: string; name: string }[];
 }
 
 export default function AIChat() {
@@ -22,7 +23,9 @@ export default function AIChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<{ data: string; mimeType: string; name: string }[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const {
     isListening,
@@ -75,8 +78,52 @@ export default function AIChat() {
     }
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles: { data: string; mimeType: string; name: string }[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      if (file.size > 20 * 1024 * 1024) {
+        toast({
+          title: 'File too large',
+          description: `${file.name} exceeds 20MB limit`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+
+      const reader = new FileReader();
+      await new Promise((resolve) => {
+        reader.onload = (e) => {
+          const base64 = e.target?.result as string;
+          const data = base64.split(',')[1];
+          newFiles.push({
+            data,
+            mimeType: file.type,
+            name: file.name,
+          });
+          resolve(null);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    setSelectedFiles(prev => [...prev, ...newFiles]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const sendMessage = async (text: string = input) => {
-    if (!text.trim() || isLoading) return;
+    if ((!text.trim() && selectedFiles.length === 0) || isLoading) return;
 
     if (!apiKey) {
       toast({
@@ -87,20 +134,28 @@ export default function AIChat() {
       return;
     }
 
-    const userMessage: Message = { role: 'user', content: text.trim() };
+    const userMessage: Message = { 
+      role: 'user', 
+      content: text.trim() || 'Analyze these files',
+      files: selectedFiles.length > 0 ? selectedFiles : undefined
+    };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setSelectedFiles([]);
     resetTranscript();
     setIsLoading(true);
 
     try {
-      const aiResponse = await sendGeminiMessage(text.trim(), apiKey);
+      const aiResponse = await sendGeminiMessage(
+        text.trim() || 'Analyze these files', 
+        apiKey,
+        userMessage.files
+      );
       
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
       speak(aiResponse);
     } catch (error) {
       console.error('Error:', error);
-      // Error toast is already handled by useGeminiAI hook
     } finally {
       setIsLoading(false);
     }
@@ -197,8 +252,19 @@ export default function AIChat() {
                   <div className={`text-3xl ${message.role === 'assistant' ? 'animate-scale-in' : ''}`}>
                     {message.role === 'user' ? '👤' : '🤖'}
                   </div>
-                  <div className="flex-1 whitespace-pre-wrap break-words leading-relaxed">
-                    {message.content}
+                  <div className="flex-1 space-y-3">
+                    {message.files && message.files.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {message.files.map((file, idx) => (
+                          <div key={idx} className="bg-background/20 rounded px-2 py-1 text-xs">
+                            📎 {file.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="whitespace-pre-wrap break-words leading-relaxed">
+                      {message.content}
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -226,6 +292,19 @@ export default function AIChat() {
 
       <div className="border-t bg-card/80 backdrop-blur-xl p-6 shadow-lg">
         <div className="max-w-4xl mx-auto">
+          {selectedFiles.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {selectedFiles.map((file, idx) => (
+                <div key={idx} className="bg-primary/10 rounded-lg px-3 py-2 flex items-center gap-2 text-sm">
+                  <span className="truncate max-w-[200px]">📎 {file.name}</span>
+                  <button onClick={() => removeFile(idx)} className="hover:bg-primary/20 rounded p-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
           <div className="flex gap-3 mb-3">
             {isSupported && (
               <Button
@@ -238,6 +317,24 @@ export default function AIChat() {
               </Button>
             )}
             
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.txt"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              className="h-14 w-14 hover:scale-105 transition-all"
+            >
+              <Paperclip className="h-5 w-5" />
+            </Button>
+            
             <Input
               placeholder={isListening ? 'Listening...' : 'Type your message...'}
               value={input}
@@ -249,7 +346,7 @@ export default function AIChat() {
             
             <Button
               onClick={() => sendMessage()}
-              disabled={!input.trim() || isLoading}
+              disabled={(!input.trim() && selectedFiles.length === 0) || isLoading}
               className="h-14 w-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all hover:scale-105 disabled:opacity-50"
             >
               <Send className="h-5 w-5" />
