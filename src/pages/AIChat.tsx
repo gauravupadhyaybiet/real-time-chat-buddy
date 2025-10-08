@@ -3,16 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Send, Mic, MicOff, Volume2, Paperclip, X } from 'lucide-react';
+import { ArrowLeft, Send, Mic, MicOff, Volume2, Paperclip, X, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useGeminiAI } from '@/hooks/useGeminiAI';
+import { useImageGeneration } from '@/hooks/useImageGeneration';
 import { ApiKeyDialog } from '@/components/chat/ApiKeyDialog';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   files?: { data: string; mimeType: string; name: string }[];
+  imageUrl?: string;
 }
 
 export default function AIChat() {
@@ -24,6 +26,7 @@ export default function AIChat() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<{ data: string; mimeType: string; name: string }[]>([]);
+  const [mode, setMode] = useState<'chat' | 'image'>('chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -37,6 +40,7 @@ export default function AIChat() {
   } = useSpeechRecognition();
 
   const { sendMessage: sendGeminiMessage } = useGeminiAI();
+  const { generateImage, isLoading: isGeneratingImage } = useImageGeneration();
 
   useEffect(() => {
     // Load API key from localStorage
@@ -123,41 +127,63 @@ export default function AIChat() {
   };
 
   const sendMessage = async (text: string = input) => {
-    if ((!text.trim() && selectedFiles.length === 0) || isLoading) return;
+    if ((!text.trim() && selectedFiles.length === 0) || isLoading || isGeneratingImage) return;
 
-    if (!apiKey) {
-      toast({
-        title: 'API Key Required',
-        description: 'Please set your Gemini API key to start chatting.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    if (mode === 'chat') {
+      if (!apiKey) {
+        toast({
+          title: 'API Key Required',
+          description: 'Please set your Gemini API key to start chatting.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-    const userMessage: Message = { 
-      role: 'user', 
-      content: text.trim() || 'Analyze these files',
-      files: selectedFiles.length > 0 ? selectedFiles : undefined
-    };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setSelectedFiles([]);
-    resetTranscript();
-    setIsLoading(true);
+      const userMessage: Message = { 
+        role: 'user', 
+        content: text.trim() || 'Analyze these files',
+        files: selectedFiles.length > 0 ? selectedFiles : undefined
+      };
+      setMessages(prev => [...prev, userMessage]);
+      setInput('');
+      setSelectedFiles([]);
+      resetTranscript();
+      setIsLoading(true);
 
-    try {
-      const aiResponse = await sendGeminiMessage(
-        text.trim() || 'Analyze these files', 
-        apiKey,
-        userMessage.files
-      );
-      
-      setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
-      speak(aiResponse);
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setIsLoading(false);
+      try {
+        const aiResponse = await sendGeminiMessage(
+          text.trim() || 'Analyze these files', 
+          apiKey,
+          userMessage.files
+        );
+        
+        setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+        speak(aiResponse);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Image generation mode
+      const userMessage: Message = { 
+        role: 'user', 
+        content: text.trim()
+      };
+      setMessages(prev => [...prev, userMessage]);
+      setInput('');
+      resetTranscript();
+
+      try {
+        const imageUrl = await generateImage(text.trim());
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: 'Generated image:',
+          imageUrl 
+        }]);
+      } catch (error) {
+        console.error('Error:', error);
+      }
     }
   };
 
@@ -265,6 +291,13 @@ export default function AIChat() {
                     <div className="whitespace-pre-wrap break-words leading-relaxed">
                       {message.content}
                     </div>
+                    {message.imageUrl && (
+                      <img 
+                        src={message.imageUrl} 
+                        alt="Generated" 
+                        className="rounded-lg max-w-full h-auto mt-2"
+                      />
+                    )}
                   </div>
                 </div>
               </Card>
@@ -305,8 +338,26 @@ export default function AIChat() {
             </div>
           )}
           
+          <div className="flex gap-2 mb-3">
+            <Button
+              variant={mode === 'chat' ? 'default' : 'outline'}
+              onClick={() => setMode('chat')}
+              className="transition-all"
+            >
+              Chat
+            </Button>
+            <Button
+              variant={mode === 'image' ? 'default' : 'outline'}
+              onClick={() => setMode('image')}
+              className="transition-all"
+            >
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Generate Image
+            </Button>
+          </div>
+          
           <div className="flex gap-3 mb-3">
-            {isSupported && (
+            {mode === 'chat' && isSupported && (
               <Button
                 variant={isListening ? 'destructive' : 'outline'}
                 size="icon"
@@ -317,36 +368,40 @@ export default function AIChat() {
               </Button>
             )}
             
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/*,.pdf,.doc,.docx,.txt"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => fileInputRef.current?.click()}
-              className="h-14 w-14 hover:scale-105 transition-all"
-            >
-              <Paperclip className="h-5 w-5" />
-            </Button>
+            {mode === 'chat' && (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-14 w-14 hover:scale-105 transition-all"
+                >
+                  <Paperclip className="h-5 w-5" />
+                </Button>
+              </>
+            )}
             
             <Input
-              placeholder={isListening ? 'Listening...' : 'Type your message...'}
+              placeholder={isListening ? 'Listening...' : mode === 'chat' ? 'Type your message...' : 'Describe the image...'}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              disabled={isLoading || isListening}
+              disabled={isLoading || isListening || isGeneratingImage}
               className="flex-1 h-14 text-lg bg-background/50 border-primary/20 focus:border-primary transition-all"
             />
             
             <Button
               onClick={() => sendMessage()}
-              disabled={(!input.trim() && selectedFiles.length === 0) || isLoading}
+              disabled={(!input.trim() && (mode === 'image' || selectedFiles.length === 0)) || isLoading || isGeneratingImage}
               className="h-14 w-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all hover:scale-105 disabled:opacity-50"
             >
               <Send className="h-5 w-5" />
