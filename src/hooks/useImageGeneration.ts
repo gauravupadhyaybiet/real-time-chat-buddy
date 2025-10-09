@@ -8,8 +8,12 @@ export function useImageGeneration() {
 
   const generateImage = async (prompt: string): Promise<string> => {
     setIsLoading(true);
-    
+
     try {
+      if (!supabase) {
+        throw new Error("Supabase is not configured. Please check your environment variables.");
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: { prompt }
       });
@@ -23,7 +27,7 @@ export function useImageGeneration() {
       return data.imageUrl;
     } catch (error) {
       console.error("Error generating image:", error);
-      
+
       if (error instanceof Error) {
         toast({
           title: "Error",
